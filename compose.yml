@@ -1,0 +1,17 @@
+services:
+  sim:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: underwater_sim:jazzy
+    container_name: stonefish_jazzy_sim
+    ports:
+      - "8080:8080"  # noVNC Web UI
+      - "5900:5900"  # Direct VNC client access (optional)
+    volumes:
+      # Mount workspace source code into container for live development
+      - ./ros_ws:/ros_ws
+    environment:
+      - DISPLAY=:99
+    tty: true
+    stdin_open: true

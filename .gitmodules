@@ -1,0 +1,6 @@
+[submodule "ros_ws/src/stonefish"]
+	path = ros_ws/src/stonefish
+	url = https://github.com/patrykcieslak/stonefish.git
+[submodule "ros_ws/src/stonefish_ros2"]
+	path = ros_ws/src/stonefish_ros2
+	url = https://github.com/patrykcieslak/stonefish_ros2.git
