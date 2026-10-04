@@ -1,0 +1,15 @@
+{
+  "name": "ROS 2 Jazzy Underwater Sim",
+  "dockerComposeFile": "../compose.yml",
+  "service": "sim",
+  "workspaceFolder": "/ros_ws",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-python.python",
+        "ms-iot.vscode-ros"
+      ]
+    }
+  }
+}

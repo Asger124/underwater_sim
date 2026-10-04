@@ -1,1 +1,68 @@
 # underwater_sim
+
+A containerized development environment for underwater robotics simulation
+using **ROS 2 Jazzy** (Ubuntu 24.04) and the **Stonefish** simulator.
+The simulator window is shown in your web browser through noVNC, so it works
+the same on Windows (WSL2) and macOS.
+
+## Prerequisites
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/), installed and **running**
+
+## Quick start
+
+### 1. Clone the repository (with submodules)
+
+```bash
+git clone --recurse-submodules https://github.com/Asger124/underwater_sim.git
+cd underwater_sim
+```
+
+If you cloned without `--recurse-submodules`, run:
+```bash
+git submodule update --init --recursive
+```
+
+### 2. Build and start the container
+
+```bash
+docker compose up -d --build
+```
+The first time takes several minutes.
+
+### 3. Open the desktop in your browser
+
+Go to <http://localhost:8080/vnc.html> and click **Connect**.
+Simulator windows will appear here.
+
+### 4. Build the workspace 
+
+Open a shell inside the container:
+```bash
+docker exec -it stonefish_jazzy_sim bash
+```
+Your prompt should now look like `root@<id>:/ros_ws#`. Then run:
+```bash
+colcon build --symlink-install
+source install/setup.bash
+```
+The Stonefish build takes a while. The results are saved in your repo folder,
+so you only need to repeat this when C++ code, CMake files or new files are added.
+
+### 5. Launch the simulation
+
+```bash
+ros2 launch my_sim_package bringup.launch.py
+```
+Look at the simulation in the browser tab from step 3.
+
+## Daily use
+
+```bash
+docker compose up -d                      # start the container
+docker exec -it stonefish_jazzy_sim bash  # open a shell
+source install/setup.bash                 # in every new shell
+ros2 launch my_sim_package bringup.launch.py
+exit                                      # exit the container
+docker compose down                       # stop when finished
+```
