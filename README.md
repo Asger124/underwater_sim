@@ -9,7 +9,7 @@ the same on Windows (WSL2) and macOS.
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/), installed and **running**
 
-## Quick start
+## How to run
 
 ### 1. Clone the repository (with submodules)
 
