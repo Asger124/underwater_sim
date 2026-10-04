@@ -43,11 +43,15 @@ docker exec -it stonefish_jazzy_sim bash
 ```
 Your prompt should now look like `root@<id>:/ros_ws#`. Then run:
 ```bash
-colcon build --symlink-install
+/ros_ws/build.sh
+```
+The Stonefish build takes a while.
+
+When the script is finished run: 
+```bash
 source install/setup.bash
 ```
-The Stonefish build takes a while. The results are saved in your repo folder,
-so you only need to repeat this when C++ code, CMake files or new files are added.
+
 
 ### 5. Launch the simulation
 
