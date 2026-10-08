@@ -14,21 +14,13 @@ An underwater robotics simulation workspace using **ROS 2 Jazzy** and the
 - Stonefish build dependencies: `build-essential`, `cmake`, `libglm-dev`,
   `libsdl2-dev`, `libfreetype6-dev`, `libglew-dev`, and `libboost-system-dev`
 
-### Clone
+### Build
 
-```bash
-git clone --branch addBlueRov2FromVm --recurse-submodules \
-  https://github.com/Asger124/underwater_sim.git
-cd underwater_sim
-```
-
-If the repository was cloned without submodules:
+After checking out this branch, make sure the submodules are initialized:
 
 ```bash
 git submodule update --init --recursive
 ```
-
-### Build
 
 Use a fresh terminal, or make sure another ROS workspace is not sourced.
 Older Stonefish libraries can cause ABI and symbol lookup errors.
