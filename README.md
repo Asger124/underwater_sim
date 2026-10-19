@@ -1,108 +1,120 @@
 # underwater_sim
 
-An underwater robotics simulation workspace using **ROS 2 Jazzy** and the
-**Stonefish** simulator. This branch includes the Stonefish and Stonefish ROS 2
-`v1.3` submodules and the BlueROV2 simulation package.
+BlueROV2 underwater simulation using ROS 2 Jazzy, Stonefish, and ArduSub SITL.
 
-## Native BlueROV2 test
-
-### Prerequisites
+## Requirements
 
 - Ubuntu 24.04
 - ROS 2 Jazzy
+- ArduPilot checked out at `~/ardupilot`
 - `colcon`
-- Stonefish build dependencies: `build-essential`, `cmake`, `libglm-dev`,
-  `libsdl2-dev`, `libfreetype6-dev`, `libglew-dev`, and `libboost-system-dev`
+- A graphical desktop for Stonefish
 
-### Build
+## First-time setup
 
-After checking out this branch, make sure the submodules are initialized:
+From the repository root:
 
 ```bash
 git submodule update --init --recursive
-```
-
-Use a fresh terminal, or make sure another ROS workspace is not sourced.
-Older Stonefish libraries can cause ABI and symbol lookup errors.
-
-```bash
 source /opt/ros/jazzy/setup.bash
-unset AMENT_PREFIX_PATH COLCON_PREFIX_PATH CMAKE_PREFIX_PATH LD_LIBRARY_PATH
-source /opt/ros/jazzy/setup.bash
-
 cd ros_ws
-colcon build --symlink-install --event-handlers console_direct+ \
-  --packages-select Stonefish
-source install/setup.bash
-colcon build --symlink-install --event-handlers console_direct+ \
-  --packages-select stonefish_ros2 stonefish_bluerov2 my_sim_package
+colcon build --symlink-install
 source install/setup.bash
 ```
 
-Verify that the packages come from this workspace:
-
-```bash
-ros2 pkg prefix stonefish_ros2
-ros2 pkg prefix stonefish_bluerov2
-```
-
-### Launch
-
-Start the graphical BlueROV2 tank simulation:
-
-```bash
-ros2 launch stonefish_bluerov2 bluerov2_sim.py
-```
-
-The Stonefish window should open in the Ubuntu desktop. ArduPilot SITL is not
-required just to check that the graphical scene starts. SITL is required for
-vehicle-control integration.
-
-## Known Stonefish v1.3 source fix
-
-The upstream Stonefish `v1.3` tag does not include `<cstdint>` in
-`Library/include/sensors/Sample.h`, although that header uses `uint64_t`.
-Consequently, a clean native build can fail there. The local working copy used
-to test this branch contains this one-line fix:
+If the build reports a missing `uint64_t` declaration in Stonefish, add this
+line to `ros_ws/src/stonefish/Library/include/sensors/Sample.h`:
 
 ```cpp
 #include <cstdint>
 ```
 
-This file belongs to the external `stonefish` Git submodule and cannot be
-included in a commit to this parent repository. Until the fix is published in
-a shared Stonefish fork or upstream, apply it after cloning:
+Then run the build again.
+
+## Start the simulation
+
+Use three terminals. Keep terminals 1 and 2 running.
+
+### T1: Start ArduSub
 
 ```bash
-sed -i '/#define __Stonefish_Sample__/a #include <cstdint>' \
-  ros_ws/src/stonefish/Library/include/sensors/Sample.h
+cd ~/ardupilot
+Tools/autotest/sim_vehicle.py \
+  -v ArduSub \
+  --model JSON \
+  --no-mavproxy \
+  --out=127.0.0.1:14550 \
+  -P GPS1_TYPE=0 \
+  -P EK3_SRC1_POSXY=6 \
+  -P EK3_SRC1_VELXY=6 \
+  -P EK3_SRC1_POSZ=1 \
+  -P EK3_SRC1_YAW=1 \
+  -P EK3_GPS_CHECK=0
 ```
 
-Do not commit the modified file inside the submodule unless you have a shared
-Stonefish fork and have pushed that submodule commit. The generated
-`ros_ws/build/`, `ros_ws/install/`, `ros_ws/log/`, and
-`ros_ws/stonefish-v1.3-install/` directories are local build artifacts and are
-intentionally not committed.
+Wait until ArduSub is running on `127.0.0.1:5760`.
 
-## Docker/noVNC alternative
-
-The repository also provides a Docker-based desktop:
+### T2: Start Stonefish
 
 ```bash
-docker compose up -d --build
+cd ~/RP/underwater_sim
+source /opt/ros/jazzy/setup.bash
+source ros_ws/install/setup.bash
+ros2 launch stonefish_bluerov2 bluerov2_sim.py
 ```
 
-Open <http://localhost:8080/vnc.html>, then build inside the container:
+Wait until the Stonefish window is open and the bridge reports
+`Callbacks received`.
+
+### T3: Run the rectangle controller
 
 ```bash
-docker exec -it stonefish_jazzy_sim bash
-/ros_ws/build.sh
-source install/setup.bash
-ros2 launch my_sim_package bringup.launch.py
+cd ~/RP/underwater_sim
+source /opt/ros/jazzy/setup.bash
+source ros_ws/install/setup.bash
+export PYTHONPATH="$HOME/ardupilot/modules/mavlink:$PYTHONPATH"
+ros2 run stonefish_bluerov2 rectangle_mission.py
 ```
 
-Stop the container when finished:
+The controller:
+
+- connects to ArduSub on TCP port `5760`;
+- uses the Stonefish odometry topic `/bluerov2/odometry`;
+- enters GUIDED mode and arms the vehicle;
+- dives 1 metre and follows a 3 m by 2 m rectangle;
+- disarms after returning to the start.
+
+To change the rectangle:
 
 ```bash
-docker compose down
+ros2 run stonefish_bluerov2 rectangle_mission.py \
+  --length 4 \
+  --width 2 \
+  --depth 1
 ```
+
+All dimensions are in metres.
+
+## Useful checks
+
+Check that Stonefish is publishing odometry:
+
+```bash
+source /opt/ros/jazzy/setup.bash
+source ~/RP/underwater_sim/ros_ws/install/setup.bash
+ros2 topic echo /bluerov2/odometry
+```
+
+Check the thruster commands:
+
+```bash
+ros2 topic echo /bluerov2/setpoint/pwm
+```
+
+If the controller cannot connect, make sure T1 is still running and that
+`SERIAL0 on TCP port 5760` appears in the ArduSub output.
+
+If the vehicle does not enter GUIDED or arm, check the ArduSub terminal for
+the pre-arm or mode error. Start T2 before T3 so odometry is available.
+
+Press `Ctrl+C` in T3 to stop the controller. Then close T2 and T1.
