@@ -18,7 +18,7 @@ FINAL_WAIT = 2.0
 
 SEND_INTERVAL = 0.1
 
-CONN = "tcp:127.0.0.1:5772"
+CONN = "tcp:127.0.0.1:5762"
 
 m = mavutil.mavlink_connection(CONN)
 print("Waiting for heartbeat...")
