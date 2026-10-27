@@ -6,4 +6,4 @@
 	url = https://github.com/patrykcieslak/stonefish_ros2.git
 [submodule "ros_ws/src/stonefish_bluerov2"]
 	path = ros_ws/src/stonefish_bluerov2
-	url = https://github.com/bvibhav/stonefish_bluerov2.git
+	url = https://github.com/Asger124/stonefish_bluerov2.git
