@@ -15,7 +15,24 @@ note: all april tags aperently needs a white boarder around them.
 
 ### Reproduce the fixed-position vision test
 
-From the repository root, build and source the workspace:
+The apriltag_ros node depends on packages from AprilTag library, 
+see:
+```bash
+ros_ws/src/apriltag_ros/.github/deps.repos
+```
+
+You can use the command 
+```bash 
+apt policy ros-jazzy-apriltag
+```
+to see which versions apt will install.
+Most versions should work, but this command can confirm that apt installs versions close to the pinned versions: v3.4.5 and 2.0.2
+
+To install write: 
+```bash
+sudo apt install ros-jazzy-apriltag ros-jazzy-apriltag-msgs
+```
+Then from the repository root, build and source the workspace:
 
 ```bash
 cd ~/RP/underwater_sim
