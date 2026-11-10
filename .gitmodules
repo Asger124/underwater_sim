@@ -7,3 +7,6 @@
 [submodule "ros_ws/src/stonefish_bluerov2"]
 	path = ros_ws/src/stonefish_bluerov2
 	url = https://github.com/Asger124/stonefish_bluerov2.git
+[submodule "ros_ws/src/apriltag_ros"]
+	path = ros_ws/src/apriltag_ros
+	url = https://github.com/christianrauch/apriltag_ros.git
