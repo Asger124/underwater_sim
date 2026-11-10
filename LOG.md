@@ -80,6 +80,44 @@ ros2 topic echo /detections
 
 Successful detections contain an entry with family `36h11` and ID `0`.
 
+### Getting the 3D tag pose and distance
+
+The AprilTag node estimates the tag pose with PnP and publishes it on `/tf`.
+The pose is only valid when the camera is calibrated and the configured tag
+size matches the physical tag. The current configuration uses a `0.25` m tag;
+update `ros_ws/src/stonefish_bluerov2/config/tags.yaml` if the printed tag has
+a different edge length.
+
+Check the available TF frames:
+
+```bash
+ros2 topic echo /tf
+```
+
+The configured tag frame is `leader_tag_frame`. To inspect its pose directly,
+replace `<camera_frame>` with the camera frame shown in the camera info header:
+
+```bash
+ros2 topic echo /bluerov2_2/left/camera_info --once
+ros2 run tf2_ros tf2_echo <camera_frame> leader_tag_frame
+```
+
+The transform translation is in meters. For a camera optical frame, `x` is
+left/right, `y` is up/down, and `z` is forward distance. The 3D distance to
+the tag is:
+
+```text
+distance = sqrt(x*x + y*y + z*z)
+```
+
+For leader-follower control, use the relative position errors:
+
+```text
+forward_error = z - desired_distance
+lateral_error = x
+vertical_error = y
+```
+
 ### Fixed versus dynamic vehicles
 
 The tank scenario currently passes `fixed="true"` to both vehicle includes in
