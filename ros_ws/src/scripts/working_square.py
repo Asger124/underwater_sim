@@ -7,11 +7,11 @@ Run with ArduSub + Stonefish already running.
 import time
 from pymavlink import mavutil
 
-FORWARD_INPUT = 600
+FORWARD_INPUT = 500
 TURN_INPUT = 300
 
 INITIAL_WAIT = 3.0
-FORWARD_TIME = 5.0
+FORWARD_TIME = 20.0
 TURN_TIME = 2.0       # Initial trial; calibrate to reach 90 degrees
 PAUSE_TIME = 3.0
 FINAL_WAIT = 2.0
@@ -71,7 +71,7 @@ try:
     # Phase 3: allow motion to settle
     run_phase("Pause before turn", PAUSE_TIME)
 
-    # Phase 4: rotate in place
+    #Phase 4: rotate in place
     run_phase(
         "Turn",
         TURN_TIME,
@@ -100,7 +100,7 @@ try:
     # Phase 9: allow rotation to settle
     run_phase("Pause after turn2", PAUSE_TIME)
 
-    # Phase 10: third straight segment
+    # Phase 500: third straight segment
     run_phase(
         "Forward segment 3",
         FORWARD_TIME,
@@ -125,39 +125,8 @@ try:
     run_phase("Final neutral", FINAL_WAIT)
 
 finally:
-    # Always attempt to stop movement before disarming.
+    #Always attempt to stop movement before disarming.
     send_control(0, 0, 500, 0)
     time.sleep(0.5)
     m.arducopter_disarm()
     print("Experiment finished.")
-
-# m.set_mode(m.mode_mapping()["MANUAL"])
-# time.sleep(1)
-# m.arducopter_arm()
-
-# t0 = time.time()
-# armed = False
-# last_print = 0
-# while time.time() - t0 < 8:
-#     elapsed = time.time() - t0
-#     x = 0 if elapsed < 3 else 600
-#     m.mav.manual_control_send(m.target_system, x, 0, 500, 0, 0)
-
-#     while True:
-#         msg = m.recv_match(blocking=False)
-#         if msg is None:
-#             break
-#         t = msg.get_type()
-#         if t == "STATUSTEXT":
-#             print("STATUS:", msg.text)
-#         elif t == "HEARTBEAT" and msg.get_srcSystem() == m.target_system:
-#             armed = bool(msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED)
-#         elif t == "SERVO_OUTPUT_RAW" and time.time() - last_print > 0.5:
-#             last_print = time.time()
-#             servos = [getattr(msg, f"servo{i}_raw") for i in range(1, 9)]
-#             print(f"t={elapsed:4.1f}s x={x:3d} armed={armed} servos={servos}")
-#     time.sleep(0.1)
-
-# m.mav.manual_control_send(m.target_system, 0, 0, 500, 0, 0)
-# m.arducopter_disarm()
-# print("Done")
